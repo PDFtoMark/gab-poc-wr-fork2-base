@@ -1,0 +1,24 @@
+name: Deploy development
+on:
+  workflow_run:
+    workflows: ["Release Workflow"]
+    types:
+      - completed
+jobs:
+  gitlab-dev-deploy:
+    if: |
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'development'
+    runs-on: ubuntu-latest
+    environment: development
+    steps:
+      - name: show context
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_TRIGGER_TOKEN: ${{ secrets.DEPLOY_TRIGGER_TOKEN }}
+        run: |
+          echo "PRIVILEGED DEPLOY JOB RAN"
+          echo "upstream_event=${{ github.event.workflow_run.event }}"
+          echo "upstream_head_branch=${{ github.event.workflow_run.head_branch }}"
+          echo "upstream_head_repo=${{ github.event.workflow_run.head_repository.full_name }}"
+          echo "TRIGGER_TOKEN_PRESENT=$([ -n "$DEPLOY_TRIGGER_TOKEN" ] && echo YES || echo NO)"
